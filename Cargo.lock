@@ -677,21 +677,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "data-harpoon"
-version = "0.1.0"
-dependencies = [
- "datafusion",
- "futures",
- "reedline",
- "regex",
- "rmcp",
- "serde",
- "serde_json",
- "tokio",
- "toml",
-]
-
-[[package]]
 name = "datafusion"
 version = "47.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1287,6 +1272,21 @@ dependencies = [
  "recursive",
  "regex",
  "sqlparser",
+]
+
+[[package]]
+name = "dataharpoon"
+version = "0.1.0"
+dependencies = [
+ "datafusion",
+ "futures",
+ "reedline",
+ "regex",
+ "rmcp",
+ "serde",
+ "serde_json",
+ "tokio",
+ "toml",
 ]
 
 [[package]]
