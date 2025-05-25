@@ -57,14 +57,10 @@ impl Config {
         // Replace `${FOO}` characters to environment variable.
         let reg = Regex::new(r"\$\{(\w+)}").unwrap();
 
-        for cap in reg.captures_iter(content) {
-            env::var(&cap[1]).map_err(|_| {
-                format!("Environment variable in config not found. ENV={}", &cap[1])
-            })?;
-        }
-
         let content = reg
-            .replace_all(content, |cap: &regex::Captures| env::var(&cap[1]).unwrap())
+            .replace_all(content, |cap: &regex::Captures| {
+                env::var(&cap[1]).unwrap_or("".to_string())
+            })
             .to_string();
 
         let config = toml::from_str::<Config>(&content)?;

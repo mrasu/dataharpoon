@@ -1,0 +1,20 @@
+[[mcp_servers]]
+# https://github.com/modelcontextprotocol/servers/tree/main/src/time
+name = "time"
+command = "docker"
+args = ["run", "-i", "--rm", "mcp/time"]
+
+[[mcp_servers]]
+# https://github.com/github/github-mcp-server/
+name = "github"
+command = "docker"
+args = [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "GITHUB_PERSONAL_ACCESS_TOKEN",
+        "ghcr.io/github/github-mcp-server"
+]
+# Set your token to the GITHUB_PERSONAL_ACCESS_TOKEN environment variable
+env = { "GITHUB_PERSONAL_ACCESS_TOKEN" = "${GITHUB_PERSONAL_ACCESS_TOKEN}" }
