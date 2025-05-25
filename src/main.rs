@@ -4,7 +4,6 @@ mod engine;
 
 use crate::cli::repl::run_repl;
 use crate::config::config::Config;
-use std::error::Error;
 
 #[tokio::main]
 async fn main() {

@@ -1,22 +1,33 @@
 use crate::config::mcp_server_config::McpServerConfig;
 use regex::Regex;
 use serde::Deserialize;
-use std::collections::HashMap;
 use std::error::Error;
-use std::fmt::format;
 use std::{env, fs};
 
 #[derive(Deserialize)]
 pub struct Config {
+    #[serde(default)]
     pub mcp_servers: Vec<McpServerConfig>,
 }
 
 const CONFIG_FILE_LOCAL_PATH: &str = ".data_harpoon_config.local.toml";
 const CONFIG_FILE_PATH: &str = ".data_harpoon_config.toml";
 
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            mcp_servers: Vec::new(),
+        }
+    }
+}
+
 impl Config {
     pub async fn load_config() -> Result<Config, Box<dyn Error>> {
-        let filepath = Self::find_config_filepath()?;
+        let filepath = if let Some(path) = Self::find_config_filepath() {
+            path
+        } else {
+            return Ok(Self::default());
+        };
 
         let config = Self::read_config_file(filepath.clone())
             .map_err(|e| format!("failed to parse {}: {}", filepath, e))?;
@@ -24,19 +35,19 @@ impl Config {
         Ok(config)
     }
 
-    fn find_config_filepath() -> Result<String, Box<dyn Error>> {
+    fn find_config_filepath() -> Option<String> {
         match fs::exists(CONFIG_FILE_LOCAL_PATH) {
-            Ok(true) => return Ok(CONFIG_FILE_LOCAL_PATH.to_string()),
-            Err(e) => return Err(Box::new(e)),
+            Ok(true) => return Some(CONFIG_FILE_LOCAL_PATH.to_string()),
+            Err(_) => return None,
             _ => (),
         };
         match fs::exists(CONFIG_FILE_PATH) {
-            Ok(true) => return Ok(CONFIG_FILE_PATH.to_string()),
-            Err(e) => return Err(Box::new(e)),
+            Ok(true) => return Some(CONFIG_FILE_PATH.to_string()),
+            Err(_) => return None,
             _ => (),
         };
 
-        Err("config file not found".into())
+        None
     }
 
     fn read_config_file(filepath: String) -> Result<Config, Box<dyn Error>> {

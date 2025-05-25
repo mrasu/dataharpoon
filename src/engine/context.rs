@@ -27,7 +27,7 @@ impl ContextConfig {
 
 impl Context {
     pub fn new(config: Config) -> Context {
-        let context = SessionContext::new();
+        let context = SessionContext::new().enable_url_table();
         let context_config = ContextConfig::new(config);
 
         Self {

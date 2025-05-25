@@ -1,0 +1,11 @@
+id,organization_id,user_name,email,join_date,role
+1,1001,john_doe,john.doe@example.com,2025-01-15,member
+2,1001,jane_smith,jane.smith@example.com,2025-01-18,admin
+3,1002,alice_wong,alice.wong@example.com,2025-02-02,member
+4,1003,bob_johnson,bob.j@example.com,2025-02-10,moderator
+5,1002,chris_lee,chris.lee@example.com,2025-03-01,member
+6,1001,nina_patel,nina.patel@example.com,2025-03-05,member
+7,1004,omar_rahman,omar.rahman@example.com,2025-03-07,admin
+8,1003,lisa_chan,lisa.chan@example.com,2025-03-09,member
+9,1005,raj_kumar,raj.kumar@example.com,2025-03-12,member
+10,1004,emily_clark,emily.clark@example.com,2025-03-15,moderator
