@@ -4,7 +4,7 @@ An MCP-ready database that connects to your data — wherever it lives
 
 # Examples
 
-Refer [example](./example/README.md)
+Refer [example](./example)
 
 ## Query files
 
@@ -33,7 +33,7 @@ WHERE role = 'member';
 ## Call MCP
 
 ```sql
--- call mcp/time
+-- call mcp/time (https://github.com/modelcontextprotocol/servers/tree/main/src/time)
 SELECT * FROM call_mcp('time', 'get_current_time', {'timezone': 'UTC'});
 
 #=>
@@ -45,7 +45,7 @@ SELECT * FROM call_mcp('time', 'get_current_time', {'timezone': 'UTC'});
 ```
 
 ```sql
--- call GitHub's MCP
+-- call GitHub's MCP (https://github.com/github/github-mcp-server/)
 SELECT html_url, created_at, title, "user"['login'] FROM call_mcp('github', 'list_issues', {'owner': 'github', 'repo': 'github-mcp-server', 'perPage': 10});
 
 #=>
@@ -78,5 +78,5 @@ cd example
 ```
 
 ## Run yours
-1. Write `.data_harpoon_config.toml`
+1. Write `data_harpoon_config.toml`
 2. Run dataharpoon

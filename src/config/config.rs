@@ -10,8 +10,7 @@ pub struct Config {
     pub mcp_servers: Vec<McpServerConfig>,
 }
 
-const CONFIG_FILE_LOCAL_PATH: &str = ".data_harpoon_config.local.toml";
-const CONFIG_FILE_PATH: &str = ".data_harpoon_config.toml";
+const CONFIG_FILES: [&str; 2] = ["data_harpoon_config.local.toml", "data_harpoon_config.toml"];
 
 impl Default for Config {
     fn default() -> Self {
@@ -36,16 +35,13 @@ impl Config {
     }
 
     fn find_config_filepath() -> Option<String> {
-        match fs::exists(CONFIG_FILE_LOCAL_PATH) {
-            Ok(true) => return Some(CONFIG_FILE_LOCAL_PATH.to_string()),
-            Err(_) => return None,
-            _ => (),
-        };
-        match fs::exists(CONFIG_FILE_PATH) {
-            Ok(true) => return Some(CONFIG_FILE_PATH.to_string()),
-            Err(_) => return None,
-            _ => (),
-        };
+        for file in CONFIG_FILES {
+            match fs::exists(file) {
+                Ok(true) => return Some(file.to_string()),
+                Err(_) => return None,
+                _ => (),
+            };
+        }
 
         None
     }
