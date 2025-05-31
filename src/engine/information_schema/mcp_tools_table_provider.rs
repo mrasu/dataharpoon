@@ -1,6 +1,7 @@
 use crate::config::mcp_server_config::McpServerConfig;
 use crate::infra::mcp_client::McpClient;
 use async_trait::async_trait;
+use dashmap::DashMap;
 use datafusion::arrow::array::{ArrayRef, RecordBatch, StringArray};
 use datafusion::arrow::datatypes::{DataType, Field, Schema, SchemaRef};
 use datafusion::catalog::{Session, TableProvider};
@@ -27,11 +28,11 @@ pub(super) const MCP_TOOLS_TABLE_NAME: &str = "mcp_tools";
 
 #[derive(Debug)]
 pub(super) struct McpToolsTableProvider {
-    mcp_servers: Arc<HashMap<String, McpServerConfig>>,
+    mcp_servers: DashMap<String, Arc<McpServerConfig>>,
 }
 
 impl McpToolsTableProvider {
-    pub(super) fn new(mcp_servers: Arc<HashMap<String, McpServerConfig>>) -> Self {
+    pub(super) fn new(mcp_servers: DashMap<String, Arc<McpServerConfig>>) -> Self {
         Self { mcp_servers }
     }
 }
@@ -92,7 +93,7 @@ impl TableProvider for McpToolsTableProvider {
 #[derive(Debug)]
 struct McpToolsTableExecutionPlan {
     server_name_filters: Option<Vec<String>>,
-    mcp_servers: Arc<HashMap<String, McpServerConfig>>,
+    mcp_servers: DashMap<String, Arc<McpServerConfig>>,
     plan_properties: PlanProperties,
 }
 
@@ -128,7 +129,7 @@ fn server_name_filters(filters: &[&Expr]) -> Vec<Option<String>> {
 
 impl McpToolsTableExecutionPlan {
     fn new(
-        mcp_servers: Arc<HashMap<String, McpServerConfig>>,
+        mcp_servers: DashMap<String, Arc<McpServerConfig>>,
         projection: Option<&Vec<usize>>,
         filters: &[&Expr],
         schema: SchemaRef,
@@ -199,7 +200,7 @@ impl ExecutionPlan for McpToolsTableExecutionPlan {
         _partition: usize,
         _context: Arc<TaskContext>,
     ) -> Result<SendableRecordBatchStream> {
-        let server_configs = self.mcp_servers.values().map(|v| v.clone()).collect();
+        let server_configs = self.mcp_servers.iter().map(|v| v.clone()).collect();
         Ok(Box::pin(McpToolsRecordBatchStream::new(
             self.schema(),
             server_configs,
@@ -210,7 +211,7 @@ impl ExecutionPlan for McpToolsTableExecutionPlan {
 
 struct McpToolsRecordBatchStream {
     schema: SchemaRef,
-    server_configs: Vec<McpServerConfig>,
+    server_configs: Vec<Arc<McpServerConfig>>,
     server_name_filters: Option<Vec<String>>,
 
     polled_index: usize,
@@ -221,7 +222,7 @@ struct McpToolsRecordBatchStream {
 impl McpToolsRecordBatchStream {
     fn new(
         schema: SchemaRef,
-        server_configs: Vec<McpServerConfig>,
+        server_configs: Vec<Arc<McpServerConfig>>,
         server_name_filters: Option<Vec<String>>,
     ) -> Self {
         Self {
@@ -320,7 +321,7 @@ impl Stream for McpToolsRecordBatchStream {
 }
 
 impl McpToolsRecordBatchStream {
-    fn move_to_next_config(&mut self) -> Option<&McpServerConfig> {
+    fn move_to_next_config(&mut self) -> Option<&Arc<McpServerConfig>> {
         loop {
             let Some(next_config) = self.server_configs.get(self.polled_index) else {
                 return None;

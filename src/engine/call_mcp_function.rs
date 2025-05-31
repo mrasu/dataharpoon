@@ -1,5 +1,6 @@
 use crate::config::mcp_server_config::McpServerConfig;
 use crate::engine::mcp_tool_caller::McpToolCaller;
+use dashmap::DashMap;
 use datafusion::arrow::datatypes::{Schema, SchemaRef};
 use datafusion::arrow::json::ReaderBuilder;
 use datafusion::arrow::json::reader::infer_json_schema;
@@ -10,7 +11,6 @@ use datafusion::logical_expr::Expr;
 use rmcp::model::JsonObject;
 use rmcp::serde_json;
 use serde_json::Value;
-use std::collections::HashMap;
 use std::io::Cursor;
 use std::sync::Arc;
 
@@ -18,11 +18,11 @@ pub const CALL_MCP_FUNCTION_NAME: &str = "call_mcp";
 
 #[derive(Debug)]
 pub struct CallMcpFunction {
-    servers: Arc<HashMap<String, McpServerConfig>>,
+    servers: DashMap<String, Arc<McpServerConfig>>,
 }
 
 impl CallMcpFunction {
-    pub fn new(servers: Arc<HashMap<String, McpServerConfig>>) -> Self {
+    pub fn new(servers: DashMap<String, Arc<McpServerConfig>>) -> Self {
         Self { servers }
     }
 }
@@ -41,7 +41,7 @@ impl TableFunctionImpl for CallMcpFunction {
 
         let tool_caller = McpToolCaller::new(tool_name.clone(), tool_arguments);
         // TODO: cache result in the same repl session.
-        let values = tool_caller.call(config)?;
+        let values = tool_caller.call(config.value())?;
 
         let schema = self.infer_schema(&values)?;
         self.create_table_provider_for(schema, &values, tool_name)

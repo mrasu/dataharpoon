@@ -10,7 +10,6 @@ use dashmap::DashMap;
 use datafusion::catalog::{SchemaProvider, TableProvider};
 use datafusion::common::DataFusionError;
 use std::any::Any;
-use std::collections::HashMap;
 use std::sync::Arc;
 
 pub const INFORMATION_SCHEMA_NAME: &str = "information_schema";
@@ -21,14 +20,14 @@ pub struct InformationSchemaProvider {
 }
 
 impl InformationSchemaProvider {
-    pub fn new(mcp_servers: Arc<HashMap<String, McpServerConfig>>) -> Self {
+    pub fn new(mcp_servers: DashMap<String, Arc<McpServerConfig>>) -> Self {
         Self {
             tables: Self::initialize_tables(mcp_servers),
         }
     }
 
     fn initialize_tables(
-        mcp_servers: Arc<HashMap<String, McpServerConfig>>,
+        mcp_servers: DashMap<String, Arc<McpServerConfig>>,
     ) -> DashMap<String, Arc<dyn TableProvider>> {
         let tables = DashMap::<String, Arc<dyn TableProvider>>::new();
         tables.insert(

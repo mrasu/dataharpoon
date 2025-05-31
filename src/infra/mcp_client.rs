@@ -7,14 +7,15 @@ use rmcp::service::RunningService;
 use rmcp::transport::TokioChildProcess;
 use rmcp::{RoleClient, ServiceExt};
 use std::process::Command as StdCommand;
+use std::sync::Arc;
 use tokio::process::Command;
 
 pub struct McpClient {
-    config: McpServerConfig,
+    config: Arc<McpServerConfig>,
 }
 
 impl McpClient {
-    pub fn new(config: McpServerConfig) -> Self {
+    pub fn new(config: Arc<McpServerConfig>) -> Self {
         Self { config }
     }
 

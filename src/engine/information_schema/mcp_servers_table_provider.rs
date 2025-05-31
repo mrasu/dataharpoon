@@ -1,5 +1,6 @@
 use crate::config::mcp_server_config::McpServerConfig;
 use async_trait::async_trait;
+use dashmap::DashMap;
 use datafusion::arrow::array::{ArrayRef, ListBuilder, RecordBatch, StringArray, StringBuilder};
 use datafusion::arrow::datatypes::{DataType, Field, Schema, SchemaRef};
 use datafusion::catalog::{Session, TableProvider};
@@ -20,11 +21,11 @@ pub(super) const MCP_SERVERS_TABLE_NAME: &str = "mcp_servers";
 
 #[derive(Debug)]
 pub(super) struct McpServersTableProvider {
-    mcp_servers: Arc<HashMap<String, McpServerConfig>>,
+    mcp_servers: DashMap<String, Arc<McpServerConfig>>,
 }
 
 impl McpServersTableProvider {
-    pub(super) fn new(mcp_servers: Arc<HashMap<String, McpServerConfig>>) -> Self {
+    pub(super) fn new(mcp_servers: DashMap<String, Arc<McpServerConfig>>) -> Self {
         Self { mcp_servers }
     }
 }
@@ -71,14 +72,14 @@ impl TableProvider for McpServersTableProvider {
 #[derive(Debug)]
 struct McpServersTableExecutionPlan {
     plan_properties: PlanProperties,
-    mcp_servers: Arc<HashMap<String, McpServerConfig>>,
+    mcp_servers: DashMap<String, Arc<McpServerConfig>>,
 }
 
 impl McpServersTableExecutionPlan {
     fn new(
         projection: Option<&Vec<usize>>,
         schema: SchemaRef,
-        mcp_servers: Arc<HashMap<String, McpServerConfig>>,
+        mcp_servers: DashMap<String, Arc<McpServerConfig>>,
     ) -> Self {
         let projected_schema = project_schema(&schema, projection).unwrap();
         let plan_properties = Self::compute_properties(projected_schema);
@@ -157,8 +158,8 @@ impl ExecutionPlan for McpServersTableExecutionPlan {
 
 impl McpServersTableExecutionPlan {
     fn server_columns(&self) -> HashMap<&str, ArrayRef> {
-        let configs: Vec<&McpServerConfig> =
-            self.mcp_servers.iter().map(|(_, config)| config).collect();
+        let configs: Vec<Arc<McpServerConfig>> =
+            self.mcp_servers.iter().map(|v| v.value().clone()).collect();
 
         let names: Vec<_> = configs.iter().map(|c| c.name.clone()).collect();
         let names_array = StringArray::from(names);

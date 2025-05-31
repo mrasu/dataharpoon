@@ -4,10 +4,10 @@ use crate::engine::call_mcp_function::{CALL_MCP_FUNCTION_NAME, CallMcpFunction};
 use crate::engine::information_schema::information_schema_provider::{
     INFORMATION_SCHEMA_NAME, InformationSchemaProvider,
 };
+use dashmap::DashMap;
 use datafusion::dataframe::DataFrame;
 use datafusion::error::Result;
 use datafusion::prelude::SessionContext;
-use std::collections::HashMap;
 use std::sync::Arc;
 
 pub struct Context {
@@ -16,19 +16,17 @@ pub struct Context {
 }
 
 struct ContextConfig {
-    mcp_servers: Arc<HashMap<String, McpServerConfig>>,
+    mcp_servers: DashMap<String, Arc<McpServerConfig>>,
 }
 
 impl ContextConfig {
     fn new(config: Config) -> ContextConfig {
-        let mut mcp_servers = HashMap::<String, McpServerConfig>::new();
+        let mcp_servers = DashMap::<String, Arc<McpServerConfig>>::new();
         for mcp in config.mcp_servers {
-            mcp_servers.insert(mcp.name.clone(), mcp);
+            mcp_servers.insert(mcp.name.clone(), Arc::new(mcp));
         }
 
-        Self {
-            mcp_servers: Arc::new(mcp_servers),
-        }
+        Self { mcp_servers }
     }
 }
 

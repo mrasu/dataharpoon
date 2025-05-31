@@ -1,8 +1,7 @@
 use serde::Deserialize;
 use std::collections::HashMap;
 
-// TODO: use Arc to put in heap?
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize)]
 pub struct McpServerConfig {
     pub name: String,
     pub command: String,
