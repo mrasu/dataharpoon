@@ -2,24 +2,25 @@ mod cli;
 mod config;
 mod engine;
 mod infra;
+mod server;
 
-use crate::cli::repl::run_repl;
+use crate::cli::cli::run_cli;
 use crate::config::config::Config;
+use std::error::Error;
 
 #[tokio::main]
 async fn main() {
-    run_main().await
+    let res = run_main().await;
+
+    if let Err(e) = res {
+        eprint!("error: {:?}", e)
+    };
 }
 
-async fn run_main() {
-    let config_res = Config::load_config().await;
+async fn run_main() -> Result<(), Box<dyn Error>> {
+    let config = Config::load_config().await?;
 
-    let config = match config_res {
-        Ok(config) => config,
-        Err(e) => {
-            return println!("config error: {}", e);
-        }
-    };
+    run_cli(config).await?;
 
-    run_repl(config).await;
+    Ok(())
 }
