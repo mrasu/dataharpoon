@@ -1278,6 +1278,8 @@ dependencies = [
 name = "dataharpoon"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
+ "dashmap",
  "datafusion",
  "futures",
  "reedline",

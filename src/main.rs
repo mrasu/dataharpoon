@@ -1,6 +1,7 @@
 mod cli;
 mod config;
 mod engine;
+mod infra;
 
 use crate::cli::repl::run_repl;
 use crate::config::config::Config;

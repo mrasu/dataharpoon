@@ -20,9 +20,7 @@ pub async fn run_repl(config: Config) {
         match sig {
             Ok(Signal::Success(text)) => {
                 if let Ok(sqls) = split_to_sqls(text.clone()) {
-                    println!("SQL:");
                     for sql in sqls {
-                        println!("--\n{}", sql);
                         let res = ctx.run_sql(sql.as_str()).await;
                         match res {
                             Ok(df) => {

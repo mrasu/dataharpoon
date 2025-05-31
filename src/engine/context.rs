@@ -1,6 +1,9 @@
 use crate::config::config::Config;
 use crate::config::mcp_server_config::McpServerConfig;
 use crate::engine::call_mcp_function::{CALL_MCP_FUNCTION_NAME, CallMcpFunction};
+use crate::engine::information_schema::information_schema_provider::{
+    INFORMATION_SCHEMA_NAME, InformationSchemaProvider,
+};
 use datafusion::dataframe::DataFrame;
 use datafusion::error::Result;
 use datafusion::prelude::SessionContext;
@@ -34,6 +37,8 @@ impl Context {
         let context = SessionContext::new().enable_url_table();
         let context_config = ContextConfig::new(config);
 
+        Self::register_information_schema(&context, &context_config);
+
         let call_mcp_func = CallMcpFunction::new(context_config.mcp_servers.clone());
         context.register_udtf(CALL_MCP_FUNCTION_NAME, Arc::new(call_mcp_func));
 
@@ -41,6 +46,26 @@ impl Context {
             context,
             context_config,
         }
+    }
+
+    fn register_information_schema(context: &SessionContext, context_config: &ContextConfig) {
+        let information_schema_catalog = context
+            .copied_config()
+            .options()
+            .catalog
+            .default_catalog
+            .clone();
+
+        let information_schema_provider =
+            InformationSchemaProvider::new(context_config.mcp_servers.clone());
+        context
+            .catalog(information_schema_catalog.as_str())
+            .unwrap()
+            .register_schema(
+                INFORMATION_SCHEMA_NAME.into(),
+                Arc::new(information_schema_provider),
+            )
+            .unwrap();
     }
 
     pub async fn run_sql(&self, sql: &str) -> Result<DataFrame> {
