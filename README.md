@@ -78,5 +78,5 @@ cd example
 ```
 
 ## Run yours
-1. Write `data_harpoon_config.toml`
+1. Write `data_harpoon.toml`
 2. Run dataharpoon

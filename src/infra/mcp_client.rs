@@ -1,7 +1,6 @@
 use crate::config::mcp_server_config::McpServerConfig;
 use datafusion::common::{Result, exec_err};
-use futures::executor::block_on;
-use rmcp::model::PaginatedRequestParam;
+use rmcp::model::{CallToolRequestParam, CallToolResult, JsonObject, PaginatedRequestParam};
 use rmcp::model::{PaginatedRequestParamInner, Tool};
 use rmcp::service::RunningService;
 use rmcp::transport::TokioChildProcess;
@@ -20,7 +19,7 @@ impl McpClient {
     }
 
     pub async fn list_tools(&self) -> Result<Vec<Tool>> {
-        let service = self.connect_service()?;
+        let service = self.connect_service().await?;
 
         let mut found_tools = Vec::<Tool>::new();
         let mut list_params: PaginatedRequestParam = None;
@@ -55,7 +54,29 @@ impl McpClient {
         Ok(found_tools)
     }
 
-    fn connect_service(&self) -> Result<RunningService<RoleClient, ()>> {
+    pub async fn call_tool(
+        &self,
+        name: &str,
+        arguments: Option<JsonObject>,
+    ) -> Result<CallToolResult> {
+        let service = self.connect_service().await?;
+
+        let tool_params = CallToolRequestParam {
+            name: name.to_string().into(),
+            arguments: arguments.clone(),
+        };
+
+        let response = match service.call_tool(tool_params).await {
+            Ok(response) => response,
+            Err(e) => {
+                return exec_err!("failed to call mcp-server({}). {:?}", name, e);
+            }
+        };
+
+        Ok(response)
+    }
+
+    async fn connect_service(&self) -> Result<RunningService<RoleClient, ()>> {
         let mut cmd = StdCommand::new(self.config.command.clone());
         for arg in self.config.args.iter() {
             cmd.arg(arg);
@@ -65,6 +86,6 @@ impl McpClient {
         }
 
         let tokio_process = TokioChildProcess::new(&mut Command::from(cmd))?;
-        Ok(block_on(().serve(tokio_process))?)
+        Ok(().serve(tokio_process).await?)
     }
 }

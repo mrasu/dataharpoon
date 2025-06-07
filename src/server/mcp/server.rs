@@ -27,7 +27,58 @@ impl McpServer {
     async fn run_query(
         &self,
         #[tool(param)]
-        #[schemars(description = "SQL to be run")]
+        #[schemars(description = "Execute SQL
+<long-description>
+This MCP server, called DataHarpoon, functions as a database and supports DataFusion SQL, which is largely compatible with standard SQL syntax.
+By executing SQL queries, you can retrieve and aggregate data as needed.
+
+**Important:**
+Before composing your SQL queries, **you must first execute** the following query:
+```sql
+SELECT * FROM information_schema.mcp_tools;
+```
+
+This query returns a list of available mcp_tools along with their metadata.
+Understanding this information is essential to determine the correct arguments to use with the `call_mcp` function.
+
+# Available Tables
+
+## information_schema.mcp_tools
+
+Table Name: information_schema.mcp_tools
+Description: Contains metadata for tools that can be invoked using the `call_mcp` function.
+Schema: ```sql
+  CREATE TABLE information_schema.mcp_tools (
+    server_name VARCHAR,     -- Value to be passed as the `server_name` argument of `call_mcp`
+    tool_name VARCHAR,       -- Value to be passed as the `tool_name` argument of `call_mcp`
+    description VARCHAR,     -- Describes the output or purpose of the tool
+    input_schema VARCHAR     -- JSON Schema defining the structure of the `args` parameter for `call_mcp`
+  );
+```
+Example Query: ```sql
+  SELECT * FROM information_schema.mcp_tools WHERE server_name = 'awesome_server';
+```
+
+# Available Functions
+
+## call_mcp
+Function Name: call_mcp
+Arguments:
+  1. server_name – Name of the MCP server to execute against
+  2. tool_name – Name of the MCP tool to be executed
+  3. args – Arguments for the MCP tool, formatted according to the input_schema in information_schema.mcp_tools. (Note: Arguments should be specified as a map (e.g., {'key': 'value'}), representing a JSON object defined by the input_schema.)
+Examples:
+  * When arguments are provided:
+    ```sql
+    SELECT * FROM call_mcp('awesome_server', 'awesome_tool', {'key': 'value'});
+    ```
+  * When no arguments are required:
+    ```sql
+    SELECT * FROM call_mcp('awesome_server', 'awesome_tool');
+    ```
+```
+
+</long-description>")]
         query: String,
     ) -> Result<CallToolResult, McpError> {
         let res = self.context.run_sql(query.as_str()).await;

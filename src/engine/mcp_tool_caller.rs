@@ -1,56 +1,54 @@
 use crate::config::mcp_server_config::McpServerConfig;
-use datafusion::common::exec_err;
-use futures::executor::block_on;
+use crate::infra::mcp_client::McpClient;
+use datafusion::common::{DataFusionError, exec_err};
+use rmcp::model::JsonObject;
 use rmcp::model::RawContent::Text;
-use rmcp::model::{CallToolRequestParam, JsonObject};
-use rmcp::transport::TokioChildProcess;
-use rmcp::{ServiceExt, serde_json};
+use rmcp::serde_json;
 use serde_json::Value;
-use std::process::Command as StdCommand;
-use tokio::process::Command;
+use std::sync::{Arc, mpsc};
+use std::thread;
 
 pub(super) struct McpToolCaller {
-    tool_name: String,
-    arguments: Option<JsonObject>,
+    server_config: Arc<McpServerConfig>,
 }
 
 impl McpToolCaller {
-    pub fn new(tool_name: String, arguments: Option<JsonObject>) -> Self {
+    pub fn new(config: Arc<McpServerConfig>) -> Self {
         Self {
-            tool_name,
-            arguments,
+            server_config: config,
         }
     }
 
-    pub fn call(&self, config: &McpServerConfig) -> datafusion::common::Result<Vec<Value>> {
-        let mut cmd = StdCommand::new(config.command.clone());
-        for arg in config.args.iter() {
-            cmd.arg(arg);
-        }
-        for (k, v) in config.env.iter() {
-            cmd.env(k, v);
-        }
+    pub fn call(
+        &self,
+        tool_name: String,
+        arguments: Option<JsonObject>,
+    ) -> datafusion::common::Result<Vec<Value>> {
+        let cli = McpClient::new(self.server_config.clone());
 
-        let tokio_process = TokioChildProcess::new(&mut Command::from(cmd))?;
-        let service = block_on(().serve(tokio_process))?;
+        let (tx, rx) = mpsc::channel();
 
-        let tool_params = CallToolRequestParam {
-            name: self.tool_name.clone().into(),
-            arguments: self.arguments.clone(),
-        };
+        // Use thread to make it sync.
+        thread::spawn(move || {
+            let rt = tokio::runtime::Runtime::new().unwrap();
+            let result: datafusion::common::Result<_> = rt.block_on(async move {
+                let response = cli.call_tool(tool_name.as_str(), arguments).await?;
 
-        let response = match block_on(service.call_tool(tool_params)) {
-            Ok(response) => response,
-            Err(e) => {
-                return exec_err!("failed to call mcp-server({}). {}", self.tool_name, e);
-            }
-        };
+                return Ok(response);
+            });
+
+            tx.send(result).ok();
+        });
+
+        let response = rx
+            .recv()
+            .map_err(|e| DataFusionError::Execution(format!("{:?}", e)))??;
 
         let response_raw = response.content.first().map(|v| v.clone().raw);
         let Some(Text(response_text)) = response_raw else {
             return exec_err!(
-                "mcp-server({}) not return text: {:?}",
-                self.tool_name,
+                "mcp-server({}) does not return text: {:?}",
+                self.server_config.name,
                 response_raw
             );
         };
@@ -64,7 +62,7 @@ impl McpToolCaller {
             Err(_) => {
                 return exec_err!(
                     "mcp-server({}) not return json. response: {}",
-                    self.tool_name,
+                    self.server_config.name,
                     response_text
                 );
             }
@@ -77,7 +75,7 @@ impl McpToolCaller {
             _ => {
                 return exec_err!(
                     "mcp-server({}) not return array or object. {:?}",
-                    self.tool_name,
+                    self.server_config.name,
                     response_text
                 );
             }

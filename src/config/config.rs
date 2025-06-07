@@ -10,8 +10,6 @@ pub struct Config {
     pub mcp_servers: Vec<McpServerConfig>,
 }
 
-const CONFIG_FILES: [&str; 2] = ["data_harpoon_config.local.toml", "data_harpoon_config.toml"];
-
 impl Default for Config {
     fn default() -> Self {
         Self {
@@ -21,32 +19,18 @@ impl Default for Config {
 }
 
 impl Config {
-    pub async fn load_config() -> Result<Config, Box<dyn Error>> {
-        let filepath = if let Some(path) = Self::find_config_filepath() {
-            path
-        } else {
-            return Ok(Self::default());
+    pub async fn load_config(path: &str) -> Result<Config, Box<dyn Error>> {
+        if !fs::exists(path).map_err(|e| format!("failed to access {}: {:?}", path, e))? {
+            return Err(format!("config file not found: {}", path).into());
         };
 
-        let config = Self::read_config_file(filepath.clone())
-            .map_err(|e| format!("failed to parse {}: {}", filepath, e))?;
+        let config =
+            Self::read_config_file(path).map_err(|e| format!("failed to parse {}: {}", path, e))?;
 
         Ok(config)
     }
 
-    fn find_config_filepath() -> Option<String> {
-        for file in CONFIG_FILES {
-            match fs::exists(file) {
-                Ok(true) => return Some(file.to_string()),
-                Err(_) => return None,
-                _ => (),
-            };
-        }
-
-        None
-    }
-
-    fn read_config_file(filepath: String) -> Result<Config, Box<dyn Error>> {
+    fn read_config_file(filepath: &str) -> Result<Config, Box<dyn Error>> {
         let file_content = fs::read_to_string(filepath)?;
         let content = file_content.as_str();
 
