@@ -1,6 +1,6 @@
 # DataHarpoon
 
-An MCP-ready database that connects to your data — wherever it lives
+An MCP-ready query engine that connects to your data — wherever it lives
 
 DataHarpoon lets you query both raw data files and MCP-generated results with:
 * Natural-language via MCP
