@@ -32,6 +32,13 @@ impl McpServer {
 This MCP server, called DataHarpoon, functions as a database and supports DataFusion SQL, which is largely compatible with standard SQL syntax.
 By executing SQL queries, you can retrieve and aggregate data as needed.
 
+It is also possible to read the contents of local files by using the file name, enclosed in single quotes, as the table name.
+For example, writing `SELECT * FROM 'awesome.parquet'` returns the contents of `awesome.parquet`.
+Both absolute and relative paths are supported for file names.
+
+If you're unsure about the file's data, you can preview a few rows by running a query like `SELECT * FROM 'awesome.parquet' LIMIT 5`.
+The supported file formats include Parquet, CSV, Avro, JSON, and others.
+
 **Important:**
 Before composing your SQL queries, **you must first execute** the following query:
 ```sql

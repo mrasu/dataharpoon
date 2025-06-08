@@ -2,11 +2,59 @@
 
 An MCP-ready database that connects to your data — wherever it lives
 
+DataHarpoon lets you query both raw data files and MCP-generated results with:
+* Natural-language via MCP
+* Raw SQL for precise control
+
 # Examples
 
-Refer [example](./example)
+## Natural Language
+
+You can write in plain English, and MCP automatically generates and runs the SQL.
+
+When you ask:
+
+> With DataHarpoon, please tell me the number of users (written in user.csv) with the role 'member' in each organization (written in org.json).
+
+MCP will query:
+
+```sql
+SELECT o.name AS organization_name, COUNT(u.id) AS member_count
+FROM 'user.csv' u
+JOIN 'org.json' o ON u.organization_id = o.id
+WHERE u.role = 'member'
+GROUP BY o.id, o.name
+ORDER BY o.name;
+```
+
+and shows:
+
+```
+Member Count by Organization
+| Organization Name | Number of Members |
+|-------------------|-------------------|
+| EduCore | 1 |
+| GreenFuture | 1 |
+| HealthPlus | 2 |
+| Tech Innovators | 2 |
+```
+
+https://github.com/user-attachments/assets/46089765-b3d5-4c58-83e2-71a0e21a8db9
+
+When you ask:
+
+> With DataHarpoon, can you provide three issues from the github/github-mcp-server repository on GitHub?
+
+MCP will query:
+```sql
+SELECT * FROM call_mcp('github', 'list_issues', {'owner': 'github', 'repo': 'github-mcp-server', 'perPage': 3}) LIMIT 3
+```
+
+and shows three issues.
 
 ## Query files
+
+You can also run SQL directly using the CLI.
 
 ```sql
 SELECT 
@@ -65,18 +113,50 @@ SELECT html_url, created_at, title, "user"['login'] FROM call_mcp('github', 'lis
 +--------------------------------------------------------+----------------------+---------------------------------------------------------------------------------------+-----------------------+
 ```
 
+Refer [example](./example) for details.
+
 # How to use
 
-## Run examples
+After building, you can use DataHarpoon as an MCP server or run it via the CLI.
+
+## Build
 
 ```shell
 git clone git@github.com:mrasu/dataharpoon.git
 cd dataharpoon
 cargo build
+
+# file will be in ./target/debug/dataharpoon
+```
+
+## Run via CLI
+
+```shell
 cd example
 ./../target/debug/dataharpoon
 ```
 
-## Run yours
-1. Write `data_harpoon.toml`
-2. Run dataharpoon
+## Run with your own configuration
+
+1. Create a `data_harpoon.toml`
+2. Run the DataHarpoon binary with your config.
+
+## Run as an MCP Server
+
+Configure settings for your Agent.
+
+```json
+{
+  "mcpServers": {
+    "dataharpoon": {
+      "command": "/path/to/dataharpoon",
+      "args": [
+        "serve",
+        "mcp",
+        "-c",
+        "/path/to/data_harpoon.toml"
+      ]
+    }
+  }
+}
+```
