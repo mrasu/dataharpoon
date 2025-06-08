@@ -52,7 +52,7 @@ SELECT * FROM call_mcp('github', 'list_issues', {'owner': 'github', 'repo': 'git
 
 and shows three issues.
 
-## SQL vis CLI
+## SQL via CLI
 
 You can also run SQL directly using the CLI.
 
