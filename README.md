@@ -8,7 +8,7 @@ DataHarpoon lets you query both raw data files and MCP-generated results with:
 
 # Examples
 
-## Natural Language
+## Natural Language via MCP
 
 You can write in plain English, and MCP automatically generates and runs the SQL.
 
@@ -52,9 +52,11 @@ SELECT * FROM call_mcp('github', 'list_issues', {'owner': 'github', 'repo': 'git
 
 and shows three issues.
 
-## Query files
+## SQL vis CLI
 
 You can also run SQL directly using the CLI.
+
+### Query files
 
 ```sql
 SELECT 
@@ -78,7 +80,7 @@ WHERE role = 'member';
 
 ```
 
-## Call MCP
+### Call MCP
 
 ```sql
 -- call mcp/time (https://github.com/modelcontextprotocol/servers/tree/main/src/time)
