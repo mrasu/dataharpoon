@@ -19,3 +19,16 @@ args = ["run", "-i", "--rm", "mcp/time"]
 # ]
 # # Set your token to the GITHUB_PERSONAL_ACCESS_TOKEN environment variable
 # env = { "GITHUB_PERSONAL_ACCESS_TOKEN" = "${GITHUB_PERSONAL_ACCESS_TOKEN}" }
+
+# Uncomment when use
+# [[mcp_servers]]
+# # https://github.com/pyroprompts/any-chat-completions-mcp
+# name = "claude"
+# command = "npx"
+# args = ["@pyroprompts/any-chat-completions-mcp"]
+# 
+# [mcp_servers.env]
+# AI_CHAT_KEY = "${AI_CHAT_KEY}"
+# AI_CHAT_NAME = "claude"
+# AI_CHAT_MODEL = "claude-3-5-haiku-latest"
+# AI_CHAT_BASE_URL = "https://api.anthropic.com/v1/"

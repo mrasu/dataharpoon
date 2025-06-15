@@ -7,11 +7,7 @@ use rmcp::model::{
 use rmcp::tool;
 use rmcp::{Error as McpError, ServerHandler};
 use std::sync::Arc;
-/*
-{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{"roots":{"listChanged":true},"sampling":{}},"clientInfo":{"name":"ExampleClient","version":"1.0.0"}}}
-{"jsonrpc":"2.0","method":"notifications/initialized"}
-{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"run_query","arguments":{"query":"select server_name, tool_name, description from information_schema.mcp_tools where server_name = 'time';"}}}
- */
+
 #[derive(Clone)]
 pub struct McpServer {
     context: Arc<Context>,
@@ -46,20 +42,20 @@ SELECT * FROM information_schema.mcp_tools;
 ```
 
 This query returns a list of available mcp_tools along with their metadata.
-Understanding this information is essential to determine the correct arguments to use with the `call_mcp` function.
+Understanding this information is essential to determine the correct arguments to use with the `call_mcp` and `exec_mcp` function.
 
 # Available Tables
 
 ## information_schema.mcp_tools
 
 Table Name: information_schema.mcp_tools
-Description: Contains metadata for tools that can be invoked using the `call_mcp` function.
+Description: Contains metadata for tools that can be invoked using the `call_mcp` and `exec_mcp` function.
 Schema: ```sql
   CREATE TABLE information_schema.mcp_tools (
-    server_name VARCHAR,     -- Value to be passed as the `server_name` argument of `call_mcp`
-    tool_name VARCHAR,       -- Value to be passed as the `tool_name` argument of `call_mcp`
+    server_name VARCHAR,     -- Value to be passed as the `server_name` argument of `call_mcp` and `exec_mcp`
+    tool_name VARCHAR,       -- Value to be passed as the `tool_name` argument of `call_mcp` and `exec_mcp`
     description VARCHAR,     -- Describes the output or purpose of the tool
-    input_schema VARCHAR     -- JSON Schema defining the structure of the `args` parameter for `call_mcp`
+    input_schema VARCHAR     -- JSON Schema defining the structure of the `args` parameter for `call_mcp` and `exec_mcp`
   );
 ```
 Example Query: ```sql
@@ -70,6 +66,7 @@ Example Query: ```sql
 
 ## call_mcp
 Function Name: call_mcp
+Description: Executes an MCP tool with the given arguments and returns a table generated from the parsed result.
 Arguments:
   1. server_name – Name of the MCP server to execute against
   2. tool_name – Name of the MCP tool to be executed
@@ -83,7 +80,22 @@ Examples:
     ```sql
     SELECT * FROM call_mcp('awesome_server', 'awesome_tool');
     ```
-```
+## exec_mcp
+Function Name: exec_mcp
+Description: Executes an MCP tool with the given arguments and returns the response text. exec_mcp accepts the same arguments as call_mcp, but specifically for the value.
+Arguments:
+  1. server_name – Name of the MCP server to execute against
+  2. tool_name – Name of the MCP tool to be executed
+  3. args – Arguments for the MCP tool, formatted according to the input_schema in information_schema.mcp_tools. (Note: Arguments should be specified as a map (e.g., {'key': 'value'}), representing a JSON object defined by the input_schema.)
+Examples:
+  * When arguments are provided:
+    ```sql
+    SELECT exec_mcp('awesome_server', 'awesome_tool', {'key': 'value'}) AS awesome_value;
+    ```
+  * When no arguments are required:
+    ```sql
+    SELECT exec_mcp('awesome_server', 'awesome_tool') AS awesome_value;
+    ```
 
 </long-description>")]
         query: String,
