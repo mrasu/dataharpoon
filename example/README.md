@@ -57,7 +57,7 @@ SELECT * FROM call_mcp('time', 'get_current_time', {'timezone': 'UTC'});
 +---------------------------+--------+----------+
 ```
 
-### 2. Retrieve GitHub issues from `github/github-mcp-server` and categorize them using Claude
+### 2. Retrieve GitHub issues and categorize them using Claude
 
 The following SQL query retrieves issues from the `github/github-mcp-server` repository and asks Claude to classify them as either bugs or feature requests based on their titles and bodies.
 
