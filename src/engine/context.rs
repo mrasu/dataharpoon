@@ -1,12 +1,14 @@
 use crate::config::config::Config;
 use crate::config::mcp_server_config::McpServerConfig;
-use crate::engine::call_mcp_function::{CALL_MCP_FUNCTION_NAME, CallMcpFunction};
 use crate::engine::information_schema::information_schema_provider::{
     INFORMATION_SCHEMA_NAME, InformationSchemaProvider,
 };
+use crate::engine::udf::call_mcp_function::{CALL_MCP_FUNCTION_NAME, CallMcpFunction};
+use crate::engine::udf::exec_mcp_function::ExecMcpFunction;
 use dashmap::DashMap;
 use datafusion::dataframe::DataFrame;
 use datafusion::error::Result;
+use datafusion::logical_expr::ScalarUDF;
 use datafusion::prelude::SessionContext;
 use std::sync::Arc;
 
@@ -36,6 +38,10 @@ impl Context {
         let context_config = ContextConfig::new(config);
 
         Self::register_information_schema(&context, &context_config);
+
+        let exec_mcp_func =
+            ScalarUDF::from(ExecMcpFunction::new(context_config.mcp_servers.clone()));
+        context.register_udf(exec_mcp_func);
 
         let call_mcp_func = CallMcpFunction::new(context_config.mcp_servers.clone());
         context.register_udtf(CALL_MCP_FUNCTION_NAME, Arc::new(call_mcp_func));

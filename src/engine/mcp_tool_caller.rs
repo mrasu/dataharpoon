@@ -19,11 +19,11 @@ impl McpToolCaller {
         }
     }
 
-    pub fn call(
+    pub fn call_as_string(
         &self,
         tool_name: String,
         arguments: Option<JsonObject>,
-    ) -> datafusion::common::Result<Vec<Value>> {
+    ) -> datafusion::common::Result<String> {
         let cli = McpClient::new(self.server_config.clone());
 
         let (tx, rx) = mpsc::channel();
@@ -53,7 +53,17 @@ impl McpToolCaller {
             );
         };
 
-        self.to_values(response_text.text.as_str())
+        Ok(response_text.text)
+    }
+
+    pub fn call_as_values(
+        &self,
+        tool_name: String,
+        arguments: Option<JsonObject>,
+    ) -> datafusion::common::Result<Vec<Value>> {
+        let text = self.call_as_string(tool_name, arguments)?;
+
+        self.to_values(text.as_str())
     }
 
     fn to_values(&self, response_text: &str) -> datafusion::common::Result<Vec<Value>> {

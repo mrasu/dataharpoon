@@ -4,6 +4,9 @@ use crate::config::config::Config;
 use crate::engine::context::Context;
 use reedline::{DefaultPrompt, DefaultPromptSegment, Reedline, Signal};
 use std::error::Error;
+use std::io;
+use std::io::Write;
+use std::time::Duration;
 
 pub async fn run_repl(config: Config) {
     let validator = Box::new(ReplValidator {});
@@ -16,6 +19,8 @@ pub async fn run_repl(config: Config) {
     let ctx = Context::new(config);
 
     loop {
+        flush_stdout().await;
+
         let sig = line_editor.read_line(&prompt);
         match sig {
             Ok(Signal::Success(text)) => {
@@ -40,12 +45,20 @@ pub async fn run_repl(config: Config) {
                 break;
             }
             Err(err) => {
-                println!("Error: {:?}", err);
+                println!("Error while reading lines: {:?}", err);
             }
         }
     }
 }
 
+async fn flush_stdout() {
+    let mut stdout = io::stdout();
+    stdout.flush().unwrap();
+
+    // Wait briefly to ensure stdout has fully flushed to avoid collisions with CPR.
+    tokio::time::sleep(Duration::from_millis(100)).await;
+}
+
 fn handle_error(e: &dyn Error) {
-    println!("{}", e);
+    println!("Error happened. {}", e);
 }

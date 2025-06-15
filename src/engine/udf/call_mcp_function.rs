@@ -41,7 +41,7 @@ impl TableFunctionImpl for CallMcpFunction {
 
         let tool_caller = McpToolCaller::new(config.clone());
         // TODO: cache result in the same repl session.
-        let values = tool_caller.call(tool_name.clone(), tool_arguments)?;
+        let values = tool_caller.call_as_values(tool_name.clone(), tool_arguments)?;
 
         let schema = self.infer_schema(&values)?;
         self.create_table_provider_for(schema, &values, tool_name)

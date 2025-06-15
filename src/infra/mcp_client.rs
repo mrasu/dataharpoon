@@ -22,7 +22,9 @@ impl McpClient {
         let service = self.connect_service().await?;
 
         let mut found_tools = Vec::<Tool>::new();
-        let mut list_params: PaginatedRequestParam = None;
+        let mut list_params: PaginatedRequestParam = Some(PaginatedRequestParamInner {
+            cursor: Some("".to_string()),
+        });
         loop {
             let response = match service.list_tools(list_params).await {
                 Ok(response) => response,
@@ -48,9 +50,7 @@ impl McpClient {
             });
         }
 
-        if let Err(e) = service.cancel().await {
-            return exec_err!("failed to stop mcp server({}). {}", self.config.name, e);
-        }
+        self.cancel_service(service).await?;
         Ok(found_tools)
     }
 
@@ -73,6 +73,9 @@ impl McpClient {
             }
         };
 
+        // TODO: reuse connection.
+        self.cancel_service(service).await?;
+
         Ok(response)
     }
 
@@ -87,5 +90,13 @@ impl McpClient {
 
         let tokio_process = TokioChildProcess::new(&mut Command::from(cmd))?;
         Ok(().serve(tokio_process).await?)
+    }
+
+    async fn cancel_service(&self, service: RunningService<RoleClient, ()>) -> Result<()> {
+        if let Err(e) = service.cancel().await {
+            return exec_err!("failed to stop mcp server({}). {}", self.config.name, e);
+        }
+
+        Ok(())
     }
 }
