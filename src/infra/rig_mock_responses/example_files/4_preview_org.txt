@@ -1,0 +1,7 @@
+Now let me preview the organization data to see the organization names.
+
+<run_query>
+<query>SELECT * FROM 'example/org.json' LIMIT 5</query>
+</run_query>
+
+Please confirm the result of this tool use so I can proceed with the next step.

@@ -1,0 +1,7 @@
+Now let me preview the data from both files to understand the structure better, then create the query to count members by organization.
+
+<run_query>
+<query>SELECT * FROM 'example/user.csv' LIMIT 5</query>
+</run_query>
+
+Please confirm the result of this tool use so I can proceed with the next step.

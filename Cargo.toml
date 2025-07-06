@@ -16,6 +16,12 @@ serde_json = "1.0.140"
 dashmap = "6.1.0"
 async-trait = "0.1.88"
 clap = { version = "4.5.39", features = ["derive"] }
+rig-core = "0.13.0"
+# Add "vendored" feature to fix runtime error on Ubuntu24 (c.f. https://github.com/sfackler/rust-openssl/issues/2400)
+openssl = { version = "0.10.73", features = ["vendored"] }
+log = "0.4.27"
+simple_logger = "5.0.0"
+crossterm = "0.29.0"
 
 [profile.dev]
 split-debuginfo = "unpacked"

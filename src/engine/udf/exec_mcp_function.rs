@@ -1,6 +1,5 @@
 use crate::config::mcp_server_config::McpServerConfig;
 use crate::engine::mcp_tool_caller::McpToolCaller;
-use crate::infra::mcp_client::McpClient;
 use dashmap::DashMap;
 use datafusion::arrow::array::{
     Array, AsArray, BooleanArray, Float64Array, Int64Array, StringArray, StructArray,

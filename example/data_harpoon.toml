@@ -1,3 +1,6 @@
+# Put your token to use /ask command
+# claude_token = "TOKEN_HERE"
+
 [[mcp_servers]]
 # https://github.com/modelcontextprotocol/servers/tree/main/src/time
 name = "time"
@@ -26,7 +29,7 @@ args = ["run", "-i", "--rm", "mcp/time"]
 # name = "claude"
 # command = "npx"
 # args = ["@pyroprompts/any-chat-completions-mcp"]
-# 
+#
 # [mcp_servers.env]
 # AI_CHAT_KEY = "${AI_CHAT_KEY}"
 # AI_CHAT_NAME = "claude"

@@ -1,6 +1,5 @@
 use crate::engine::context::Context;
-use datafusion::arrow::json::ArrayWriter;
-use datafusion::prelude::DataFrame;
+use crate::util::arrow::json::convert_to_json;
 use rmcp::model::{
     CallToolResult, Content, Implementation, ProtocolVersion, ServerCapabilities, ServerInfo,
 };
@@ -111,7 +110,17 @@ Examples:
             }
         };
 
-        let result = match self.convert_to_json(df).await {
+        let arrow = match df.collect().await {
+            Err(e) => {
+                return Ok(CallToolResult::error(vec![Content::text(format!(
+                    "invalid query. {:?}",
+                    e
+                ))]));
+            }
+            Ok(v) => v,
+        };
+
+        let result = match convert_to_json(&arrow).await {
             Ok(result) => result,
             Err(e) => {
                 return Ok(CallToolResult::error(vec![Content::text(format!(
@@ -123,18 +132,6 @@ Examples:
 
         let result_json = String::from_utf8_lossy(result.as_slice());
         Ok(CallToolResult::success(vec![Content::text(result_json)]))
-    }
-
-    async fn convert_to_json(&self, df: DataFrame) -> datafusion::common::Result<Vec<u8>> {
-        let result = df.collect().await?;
-        let mut buf = Vec::with_capacity(1024);
-        let mut writer = ArrayWriter::new(&mut buf);
-        for batch in result {
-            writer.write(&batch)?;
-        }
-        writer.finish()?;
-
-        Ok(buf)
     }
 }
 

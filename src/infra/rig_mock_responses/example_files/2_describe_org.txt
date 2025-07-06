@@ -1,0 +1,7 @@
+Now let me examine the structure of the org.json file to understand the organization data.
+
+<run_query>
+<query>DESCRIBE 'example/org.json'</query>
+</run_query>
+
+Please confirm the result of this tool use so I can proceed with the next step.

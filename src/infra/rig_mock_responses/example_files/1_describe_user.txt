@@ -1,0 +1,17 @@
+<thinking>
+The user wants to know the number of users with the role 'member' in each organization. I need to:
+
+1. First, examine the structure of the user.csv file to understand its schema
+2. Then examine the org.json file to understand its schema
+3. Join these data sources to count users with role 'member' per organization
+
+Let me start by examining the user.csv file structure.
+</thinking>
+
+I'll help you analyze the user data to count members in each organization. Let me start by examining the structure of the user.csv file.
+
+<run_query>
+<query>DESCRIBE 'example/user.csv'</query>
+</run_query>
+
+Please confirm the result of this tool use so I can proceed with the next step.

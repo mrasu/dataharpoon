@@ -4,17 +4,44 @@ use serde::Deserialize;
 use std::error::Error;
 use std::{env, fs};
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct Config {
     #[serde(default)]
     pub mcp_servers: Vec<McpServerConfig>,
+    #[serde(default = "default_max_prompt_count")]
+    pub max_prompt_count: usize,
+
+    #[serde(default)]
+    pub claude_token: String,
+
+    #[serde(default)]
+    pub dev: DevConfig,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Self {
             mcp_servers: Vec::new(),
+            max_prompt_count: default_max_prompt_count(),
+            claude_token: "".to_string(),
+            dev: DevConfig::default(),
         }
+    }
+}
+
+fn default_max_prompt_count() -> usize {
+    10
+}
+
+#[derive(Deserialize, Clone)]
+pub struct DevConfig {
+    #[serde(default)]
+    pub use_mock: bool,
+}
+
+impl Default for DevConfig {
+    fn default() -> Self {
+        Self { use_mock: false }
     }
 }
 

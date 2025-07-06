@@ -1,0 +1,7 @@
+Now I'll get the current time in San Francisco using the appropriate timezone.
+
+<run_query>
+<query>SELECT exec_mcp('time', 'get_current_time', {'timezone': 'America/Los_Angeles'}) AS current_time</query>
+</run_query>
+
+Please confirm the result of this tool use so I can proceed with the next step.
